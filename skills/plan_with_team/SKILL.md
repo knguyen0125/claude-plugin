@@ -37,7 +37,6 @@ Create a detailed implementation plan based on the user's requirements provided 
 USER_PROMPT: $1
 ORCHESTRATION_PROMPT: $2 - (Optional) Guidance for team assembly, task structure, and execution strategy
 PLAN_OUTPUT_DIRECTORY: `specs/`
-TEAM_MEMBERS: `.claude/agents/team/*.md`
 GENERAL_PURPOSE_AGENT: `general-purpose`
 
 ## Instructions
@@ -251,7 +250,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome
 2. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
 3. Design Solution - Develop technical approach including architecture decisions and implementation strategy
-4. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Document in plan.
+4. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from list of available agents or use `general-purpose`. You MUST choose the best possible match for each task. Document in plan.
 5. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments. Document in plan.
 6. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
 7. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
@@ -314,7 +313,7 @@ Use these files to complete the task:
 - Builder
   - Name: <unique name for this builder - this allows you and other team members to reference THIS builder by name. Take note there may be multiple builders, the name make them unique.>
   - Role: <the single role and focus of this builder will play>
-  - Agent Type: <the subagent type of this builder, you'll specify based on the name in TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
+  - Agent Type: <the subagent type of this builder>
   - Resume: <default true. This lets the agent continue working with the same context. Pass false if you want to start fresh with a new context.>
 - <continue with additional team members as needed in the same format as above>
 
@@ -329,7 +328,7 @@ Use these files to complete the task:
 - **Task ID**: <unique kebab-case identifier, e.g., "setup-database">
 - **Depends On**: <Task ID(s) this depends on, or "none" if no dependencies>
 - **Assigned To**: <team member name from Team Members section>
-- **Agent Type**: <subagent from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
+- **Agent Type**: <subagent type>
 - **Parallel**: <true if can run alongside other tasks, false if must be sequential>
 - <specific action to complete>
 - <specific action to complete>
@@ -338,7 +337,7 @@ Use these files to complete the task:
 - **Task ID**: <unique-id>
 - **Depends On**: <previous Task ID, e.g., "setup-database">
 - **Assigned To**: <team member name>
-- **Agent Type**: <subagent type from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
+- **Agent Type**: <subagent type>
 - **Parallel**: <true/false>
 - <specific action>
 - <specific action>
@@ -354,7 +353,7 @@ Use these files to complete the task:
 - Run all validation commands
 - Verify acceptance criteria met
 
-<continue with additional tasks as needed. Agent types must exist in .claude/agents/team/*.md>
+<continue with additional tasks as needed.>
 
 ## Acceptance Criteria
 <list specific, measurable criteria that must be met for the task to be considered complete>
