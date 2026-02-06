@@ -4,3 +4,9 @@
 - `product-brainstorm-with-team`: Use this when product-feature implementation.
 - `plan-with-team`: Use when planning features for implementation
 - `build`: Execute plan created with `plan-with-team`
+
+# Agents
+
+## The C-Suite
+
+The agents are responsible for high-level, strategic decisions ONLY
