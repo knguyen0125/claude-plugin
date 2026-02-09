@@ -1,30 +1,8 @@
 ---
 description: Creates a concise engineering implementation plan based on user requirements and save it to spec directory
-argument-hint: [user prompt] [orchestration prompt]
+argument-hint: "[user prompt] [orchestration prompt]"
 model: opus
 disallowed-tools: Task, EnterPlanMode
-hooks:
-	Stop:
-		- matchers: "*"
-      hooks:
-			- type: command
-				command: >-
-					uv run ${CLAUDE_PLUGIN_ROOT}/hooks/validators/validate_new_file.py
-					--directory $CLAUDE_PROJECT_DIR/specs
-					--extension .md
-			- type: command
-				command: >-
-					uv run ${CLAUDE_PLUGIN_ROOT}/hooks/validators/validate_file_contains.py
-					--directory $CLAUDE_PROJECT_DIR/specs
-					--extension .md
-					--contains '## Task Description'
-					--contains '## Objective'
-					--contains '## Relevant Files'
-					--contains '## Step by Step Tasks'
-					--contains '## Acceptance Criteria'
-					--contains '## Team Orchestration'
-					--contains '### Team Members'
-
 ---
 
 
@@ -255,6 +233,19 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 6. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
 7. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
 8. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
+
+### Agent selection
+
+The plugin provide a list of pre-built agents for use.
+
+| Agent Type | Use When |
+| - | - |
+| engineering:builder | |
+| engineering:validator | |
+| engineering:code-reviewer | |
+| engineering:database-administrator | | 
+| engineering:frontend-engineer | |
+| engineering:qa-engineer | |
 
 ## Plan Format
 

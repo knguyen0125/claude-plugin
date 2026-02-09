@@ -1,0 +1,32 @@
+{
+  "name": "knguyen0125",
+  "owner": {
+    "name": "knguyen0125"
+  },
+  "plugins": [
+    {
+      "name": "general",
+      "source": "./plugins/general",
+      "description": "General purpose tools",
+      "version": "2.1.0",
+      "author": {
+        "name": "DevTools Team"
+      }
+    },
+    {
+      "name": "engineering",
+      "source": "./plugins/engineering",
+      "description": "Engineering-focused plugin"
+    },
+    {
+      "name": "executive",
+      "source": "./plugins/executive",
+      "description": "Executive-focused plugin"
+    },
+    {
+      "name": "product",
+      "source": "./plugins/product",
+      "description": "Product-management-focused plugin"
+    }
+  ]
+}

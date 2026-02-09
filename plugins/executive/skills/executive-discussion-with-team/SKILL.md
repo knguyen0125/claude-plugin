@@ -141,15 +141,23 @@ In meeting notes, record:
 
 ## Executive Agents
 
+**Agents MUST have `executive:` in their agent type**.
+
+By default, these agents are provided:
+
 | Agent | Agent Type | Focus |
 |-------|------------|-------|
-| CEO | knguyen0125:executive:chief-executive | Overall strategy, board perspective, final authority |
-| CPO | knguyen0125:executive:chief-product-officer | Product strategy, roadmap, user value |
-| CTO | knguyen0125:executive:chief-technology-officer | Technical architecture, tech investments |
-| COO | knguyen0125:executive:chief-operating-officer | Operations, processes, efficiency |
-| CRO | knguyen0125:executive:chief-revenue-officer | Revenue, sales, pipeline |
-| CMO | knguyen0125:executive:chief-marketing-officer | Marketing, positioning, brand |
-| CCO | knguyen0125:executive:chief-customer-officer | Customer success, retention, satisfaction |
+| CEO | executive:chief-executive | Overall strategy, board perspective, final authority |
+| CPO | executive:chief-product-officer | Product strategy, roadmap, user value |
+| CTO | executive:chief-technology-officer | Technical architecture, tech investments |
+| COO | executive:chief-operating-officer | Operations, processes, efficiency |
+| CRO | executive:chief-revenue-officer | Revenue, sales, pipeline |
+| CMO | executive:chief-marketing-officer | Marketing, positioning, brand |
+| CCO | executive:chief-customer-officer | Customer success, retention, satisfaction |
+
+User can add more agents locally in their `.claude/agents/executive` folder.
+
+If user specified an agent with similar role to one provided by the plugin, the locally specified agent SHOULD BE chosen over plugin-defined ones.
 
 ### Web Research Requirements (CRITICAL)
 

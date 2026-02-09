@@ -1,0 +1,9 @@
+{
+    "name": "general",
+    "description": "Executive-focused workflows",
+    "version": "1.0.0",
+    "author": {
+        "name": "Kien Nguyen",
+        "email":"k.nguyen0125@gmail.com"
+    }
+}

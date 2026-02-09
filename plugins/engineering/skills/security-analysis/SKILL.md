@@ -25,6 +25,47 @@ Ad-hoc reviews miss categories. This skill enforces a structured pass through al
 - UI/UX reviews without data handling
 - Infrastructure/network security (this is application-layer focused)
 
+## Trivy Automated Scanning
+
+Run **Trivy** before the manual OWASP checklist to automate detection of vulnerable dependencies (A06), hardcoded secrets (A02), and misconfigurations (A05).
+
+### Trivy Usage
+
+**Preferred — direct CLI (if installed):**
+```bash
+trivy fs --scanners vuln,secret,misconfig /path/to/project
+```
+
+**Fallback — Docker:**
+```bash
+docker run --rm -v $PWD:/myapp aquasec/trivy:latest fs --scanners vuln,secret,misconfig /myapp
+```
+
+**Individual scanners** (when only one category is relevant):
+```bash
+trivy fs --scanners vuln /path/to/project        # A06: dependency CVEs
+trivy fs --scanners secret /path/to/project       # A02: hardcoded secrets
+trivy fs --scanners misconfig /path/to/project    # A05: misconfigurations
+```
+
+### OWASP Category Mapping
+
+| Trivy Scanner | OWASP Category | What It Finds |
+|---------------|----------------|---------------|
+| `vuln` | **A06** - Vulnerable Components | Known CVEs in dependencies |
+| `secret` | **A02** - Cryptographic Failures | Hardcoded API keys, passwords, tokens, private keys |
+| `misconfig` | **A05** - Security Misconfiguration | IaC misconfigs (Dockerfile, Kubernetes, Terraform, etc.) |
+
+### Integrating Trivy Output
+
+1. Run Trivy with all three scanners **before** starting the OWASP checklist
+2. Map each finding to its OWASP category (see table above)
+3. Include CVE IDs, severity, and affected package/file from Trivy in the report
+4. For each Trivy finding, add a row to the summary table
+5. Mark A02, A05, A06 as covered by Trivy — still do manual review for issues Trivy cannot detect (e.g., logic-level crypto misuse for A02, application-level misconfig for A05)
+
+**Do NOT use WebSearch for known CVE lookups when Trivy is available.** Trivy's offline DB is faster and more reliable.
+
 ## The OWASP Checklist Method
 
 **Do NOT rely on pattern-matching alone.** Walk through each category explicitly, even if you think it doesn't apply. Document "N/A - not applicable because [reason]" for categories that genuinely don't apply.
@@ -36,11 +77,11 @@ For each piece of code, check ALL 10 categories in order:
 | # | Category | What to Look For |
 |---|----------|-----------------|
 | **A01** | Broken Access Control | Missing authz checks, IDOR, privilege escalation, CORS misconfiguration, path traversal, forced browsing |
-| **A02** | Cryptographic Failures | Plaintext secrets, weak hashing (MD5/SHA1 for passwords), missing TLS, hardcoded keys, weak random, missing encryption at rest |
+| **A02** | Cryptographic Failures | **Trivy `secret` scanner** detects hardcoded keys/tokens. Also check: weak hashing (MD5/SHA1 for passwords), missing TLS, weak random, missing encryption at rest |
 | **A03** | Injection | SQL injection (string interpolation in queries), XSS (unescaped output), command injection (shell=True, os.system), LDAP injection, template injection (SSTI) |
 | **A04** | Insecure Design | Missing rate limiting, no threat modeling, missing abuse case handling, no defense in depth, business logic flaws |
-| **A05** | Security Misconfiguration | Debug mode in production, default credentials, unnecessary features enabled, missing security headers, verbose error messages, XML external entities (XXE) |
-| **A06** | Vulnerable Components | Outdated dependencies, known CVEs in packages, unmaintained libraries. Note: misusing a library's API (e.g., `yaml.load` without SafeLoader) is A08, not A06. A06 is about the dependency *version* having known vulnerabilities |
+| **A05** | Security Misconfiguration | **Trivy `misconfig` scanner** detects IaC issues (Dockerfile, K8s, Terraform). Also check: debug mode in production, default credentials, unnecessary features enabled, missing security headers, verbose error messages, XML external entities (XXE) |
+| **A06** | Vulnerable Components | **Use Trivy** for dependency scanning (see above). Outdated dependencies, known CVEs in packages, unmaintained libraries. Note: misusing a library's API (e.g., `yaml.load` without SafeLoader) is A08, not A06. A06 is about the dependency *version* having known vulnerabilities |
 | **A07** | Auth Failures | Weak password policy, missing MFA, session fixation, JWT without expiry, credential stuffing susceptibility, brute force susceptibility |
 | **A08** | Integrity Failures | Insecure deserialization (pickle, yaml.load), unsigned updates, CI/CD pipeline injection, missing integrity verification |
 | **A09** | Logging Failures | No security event logging, sensitive data in logs, no alerting, no audit trail, missing monitoring |
@@ -105,6 +146,7 @@ digraph review {
   node [shape=box];
 
   start [label="Receive code for review"];
+  trivy [label="Run Trivy scan\nvuln,secret,misconfig\n(covers A02/A05/A06)"];
   identify [label="Identify entry points\n(routes, handlers, APIs)"];
   scan [label="Walk A01-A10 checklist\nfor EACH entry point"];
   check [label="Category applies?" shape=diamond];
@@ -113,9 +155,10 @@ digraph review {
   na [label="Document: N/A\nwith reason"];
   next [label="Next category?" shape=diamond];
   crosscut [label="Check cross-cutting:\nheaders, CORS, logging,\nerror handling"];
-  summary [label="Write summary table\nwith all findings"];
+  summary [label="Write summary table\nwith all findings\n(merge Trivy + manual)"];
 
-  start -> identify;
+  start -> trivy;
+  trivy -> identify;
   identify -> scan;
   scan -> check;
   check -> analyze [label="yes"];
@@ -167,7 +210,8 @@ End every security review with a summary:
 
 **Categories checked:** A01-A10
 **Categories with findings:** A01, A03, A05, A07
-**Categories N/A:** A06 (no dependency file provided), A10 (no URL fetching)
+**Categories N/A:** A10 (no URL fetching)
+**Categories scanned by Trivy:** A02 (secrets), A05 (misconfig), A06 (vuln)
 **Categories clear:** A02, A04, A08, A09
 ```
 
