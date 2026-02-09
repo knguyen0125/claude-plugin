@@ -10,6 +10,8 @@ disallowed-tools: Task, EnterPlanMode
 
 Create a detailed implementation plan based on the user's requirements provided through the `USER_PROMPT` variable. Analyze the request, think through the implementation approach, and save a comprehensive specification document to `PLAN_OUTPUT_DIRECTORY/<name-of-plan>.md` that can be used as a blueprint for actual development work. Follow the `Instructions` and work through the `Workflow` to create the plan.
 
+**Important**: STOP if calling model is not Sonnet or Opus
+
 ## Variables
 
 USER_PROMPT: $1
@@ -234,18 +236,72 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 7. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
 8. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
 
-### Agent selection
+### Agent Selection
 
-The plugin provide a list of pre-built agents for use.
+The engineering plugin provides a suite of specialized agents for executing different types of work. Select agents based on the specific nature of each task.
 
-| Agent Type | Use When |
-| - | - |
-| engineering:builder | |
-| engineering:validator | |
-| engineering:code-reviewer | |
-| engineering:database-administrator | | 
-| engineering:frontend-engineer | |
-| engineering:qa-engineer | |
+#### Available Engineering Agents
+
+| Agent Type | Purpose | Use When |
+| - | - | - |
+| `engineering:builder` | Implements features and writes code | You need to write, create, or modify code. Executes ONE focused task at a time. Modifies the codebase directly. Use for all implementation work. |
+| `engineering:code-reviewer` | Reviews code for quality and security | Code changes exist in git diff and need quality/security review before merge. Read-only specialist. Provides severity-rated feedback on logic, security, performance, and maintainability. |
+| `engineering:validator` | Verifies task completion | Work is complete and you need to verify it meets acceptance criteria and task requirements. Read-only inspection. Runs validation commands and checks that expected changes exist. |
+| `engineering:qa-engineer` | Writes and runs tests | Existing code needs test coverage (unit, integration, or e2e). Writes tests only, never modifies production code. Verifies tests fail before the code exists, then pass after. |
+| `engineering:database-administrator` | Reviews database design | You need to review schemas, migrations, queries, or ORM configurations for correctness and PostgreSQL best practices. Read-only review specialist. Flags missing indexes, incorrect types, N+1 risks, and unsafe migrations. |
+
+#### Agent Reference Format
+
+When assigning agents in task definitions, use the full type identifier: `engineering:builder`, `engineering:validator`, etc. You can also add custom agents locally to your `.claude` directory with the `engineering:` prefix.
+
+Example task assignment:
+```markdown
+### 1. Implement User Authentication
+- **Agent Type**: engineering:builder
+- **Assigned To**: builder-auth
+```
+
+#### Task Naming Conventions
+
+When assigning multiple agents of the same type, use domain-based naming to distinguish them:
+
+- `builder-backend` - Builder focused on backend services
+- `builder-frontend` - Builder focused on UI components
+- `builder-database` - Builder implementing database schema
+
+This allows tasks to reference specific team members clearly.
+
+#### Typical Task Sequencing Workflow
+
+For complete implementation plans, follow this common pattern:
+
+1. **Builder creates** → implements code/schema
+2. **Code Reviewer reviews** → assesses quality/security (blocks merge if issues)
+3. **DBA reviews** (if database work) → validates schema design
+4. **QA Engineer writes tests** → ensures code is testable and working
+5. **Validator verifies** → confirms all acceptance criteria met
+
+This sequence ensures quality gates are in place before completion. Adjust based on your specific task requirements.
+
+#### Parallel Execution Strategy
+
+Tasks can run in parallel when they are:
+- **Independent** - don't depend on each other's output
+- **Non-conflicting** - won't cause merge conflicts or resource contention
+- **Read-only review stages** - Code Review and DBA Review can run simultaneously since both review existing code without modifying it
+
+Example workflow with parallelization:
+```
+Task 1: Build API endpoints (builder-backend) [parallel: false]
+       ↓
+Task 2: Code Review (code-reviewer) [parallel: true - independent review]
+Task 3: DBA Review (database-administrator) [parallel: true - independent review]
+Task 4: Write Tests (qa-engineer) [parallel: true - tests existing code]
+       ↓ (all must complete)
+Task 5: Final Validation (validator) [parallel: false - depends on all above]
+```
+
+Use `run_in_background: true` with Task tool to execute multiple agents simultaneously.
 
 ## Plan Format
 
@@ -321,6 +377,9 @@ Use these files to complete the task:
 - **Assigned To**: <team member name from Team Members section>
 - **Agent Type**: <subagent type>
 - **Parallel**: <true if can run alongside other tasks, false if must be sequential>
+- **Acceptance Criteria**:
+  - <specific, measurable criterion 1>
+  - <specific, measurable criterion 2>
 - <specific action to complete>
 - <specific action to complete>
 
@@ -335,6 +394,24 @@ Use these files to complete the task:
 
 ### 3. <Continue Pattern>
 
+<loop until code review is completed>
+### N-x. <Final Code Review Task>
+- **Task ID**: code-review-final--round-x
+- **Depends On**: <all previous Task IDs>
+- **Assigned To**: <code-review team member>
+- **Agent Type**: <code-review agent>
+- **Parallel**: false
+- Performs final code reviews
+
+### N-x+1. <Code Review fix>
+- **Task ID**: code-review-fix-final--round-x
+- **Depends On**: <all previous Task IDs>
+- **Assigned To**: <team member name from team Members section>
+- **Agent Type**: <subagent type>
+- **Parallel**: false
+- Fix issues identified by final code-review team member
+</endloop>
+
 ### N. <Final Validation Task>
 - **Task ID**: validate-all
 - **Depends On**: <all previous Task IDs>
@@ -347,7 +424,24 @@ Use these files to complete the task:
 <continue with additional tasks as needed.>
 
 ## Acceptance Criteria
-<list specific, measurable criteria that must be met for the task to be considered complete>
+
+### Task-Level Acceptance Criteria
+
+Each task has specific criteria defined in its definition (see Step by Step Tasks above). Task-level criteria define what "done" means for that specific work unit:
+
+- **Builder tasks**: Code compiles, features work, tests pass for new code
+- **Code Reviewer tasks**: No CRITICAL or HIGH severity issues blocking merge
+- **QA Engineer tasks**: Test coverage meets minimum threshold, all tests pass
+- **DBA tasks**: Schema is optimized, no performance risks identified
+- **Validator tasks**: All task-level criteria from prior tasks verified, acceptance criteria met
+
+**Important**: Task completion (marked via TaskUpdate) should be blocked if task-level acceptance criteria are not met.
+
+### Plan-Level Acceptance Criteria
+
+After all tasks complete, the overall plan must meet these criteria. Plan-level criteria validate the entire solution:
+
+<list specific, measurable criteria that must be met for the entire plan to be considered complete. These are independent of individual task criteria and assess the overall deliverable.>
 
 ## Validation Commands
 Execute these commands to validate the task is complete:
