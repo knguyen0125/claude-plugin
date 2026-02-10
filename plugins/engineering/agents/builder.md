@@ -4,7 +4,7 @@ description: Generic engineering agent that execute ONE task at a time. Use when
 model: sonnet
 color: cyan
 skills:
-  - test_driven_development
+  - test-driven-development
 ---
 
 # Builder
