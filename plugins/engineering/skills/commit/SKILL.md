@@ -2,6 +2,7 @@
 name: commit
 description: Use when committing changes to git, creating commit messages, or the user asks to commit
 argument-hint: "[optional commit message override]"
+allowed-tools: Bash(git add:*) Bash(git commit:*) Bash(git status:*) Bash(git diff:*) Bash(git log:*)
 ---
 
 # Commit
@@ -72,8 +73,7 @@ OVERRIDE_MESSAGE: $ARGUMENTS - (Optional) If provided, use as the commit message
    - Add **body** only if the "why" isn't obvious from the description
    - Add `BREAKING CHANGE` footer if applicable
 5. Stage only the files for the current logical group (`git add <specific files>` - never `git add .` or `git add -A`).
-6. Present the commit message(s) to the user for approval before committing.
-7. Commit each group using a HEREDOC, one at a time:
+6. Commit each group using a HEREDOC, one at a time. Do NOT ask for approval — proceed directly:
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>(scope): description
