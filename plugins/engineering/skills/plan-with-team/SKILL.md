@@ -229,7 +229,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 
 1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome
 2. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
-3. Discover Available Skills - Review available skills to understand what specialized capabilities exist (e.g., test-driven-development, design-postgres-tables, security-analysis) and when to apply them
+3. Discover Available Skills - Review available skills to understand what specialized capabilities exist (e.g., test-driven-development, design-postgres-tables, security-analysis, playwright-cli) and when to apply them
 4. Design Solution - Develop technical approach including architecture decisions and implementation strategy
 5. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from list of available agents or use `general-purpose`. You MUST choose the best possible match for each task. Document in plan.
 6. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and required skills. Document in plan.

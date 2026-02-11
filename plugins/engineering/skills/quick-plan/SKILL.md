@@ -25,6 +25,7 @@ Lightweight alternative to `plan-with-team` for bugs, small features, and minor 
 - Determine the task type: `fix` | `enhancement` | `chore` | `refactor`
 - Analyze the codebase directly (no subagents) to understand the relevant code, patterns, and architecture.
 - If something is truly ambiguous (e.g., multiple possible root causes, unclear which component to change), ask ONE clarifying question. Otherwise, proceed directly to producing the plan.
+- Consider available skills when defining tasks (e.g., test-driven-development, design-postgres-tables, security-analysis, playwright-cli) and list them in "Skills Required" where applicable.
 - Generate a descriptive, kebab-case filename and save to `PLAN_OUTPUT_DIRECTORY/<filename>.md`.
 - Keep it concise. This is for small, focused work.
 
